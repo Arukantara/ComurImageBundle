@@ -14,8 +14,7 @@ $(function(){
 });
 
 function initializeImageManager(id, options){
-    
-    if((typeof options.uploadConfig.library == 'undefined' || options.uploadConfig.library) 
+    if((typeof options.uploadConfig.library == 'undefined' || options.uploadConfig.library)
         && typeof options.uploadConfig.libraryDir != 'undefined' 
         && options.uploadConfig.libraryRoute != 'undefined'
         && (options.uploadConfig.showLibrary == 'undefined'
@@ -197,7 +196,7 @@ function cropImage(id, options){
             if(typeof galleries[id] != 'undefined'){
                 // console.log('isGallery');
                 // console.log(galleries[id]);
-                addImageToGallery(filename, id, data.galleryThumb, options);
+                addImageToGallery(filename, id, data.galleryThumb, $('#selected_image').val(), options);
             }
             else{
                 // console.log('simple image');
@@ -230,43 +229,62 @@ function cropImage(id, options){
     });
 }
 
-function addImageToGallery(filename, id, thumb, options)
+function getOriginalName(name, original) {
+    var originalName = name.split('][');
+    originalName[originalName.length - 1] = original + ']';
+    originalName = originalName.join('][');
+    return originalName;
+}
+function addImageToGallery(filename, id, thumb, originalFilename, options)
 {
     // $('#'+id).val(js_array_to_php_array(galleries[id]));
     // console.log('add #gallery_preview_'+id+' input');
-    var nb = $('#gallery_preview_'+id+' input').length;
+
+
+    var nb = $('#gallery_preview_'+id+' > .gallery-image-container').length;
     var name = $('#gallery_preview_'+id).data('name');
+    var originalName = getOriginalName(name, options.originalImageFieldName);
     $('#gallery_preview_'+id).append('<div class="gallery-image-container" data-image="'+filename+'">' +
         '<span class="remove-image"><i class="glyphicon glyphicon-remove"></i></span>' +
         '<span class="gallery-image-helper"></span>' +
-        '<input type="text" id="'+id+'_'+nb+'" name="'+name+'['+nb+']" style="padding:0; border: 0; margin: 0; opacity: 0;width: 0; max-width: 0; height: 0; max-height: 0;" value="'+filename+'">' +
+        '<input type="hidden" id="'+id+'_'+nb+'" name="'+name+'['+nb+']" value="'+filename+'">' +
+        '<input type="hidden" id="'+options.originalImageFieldId+'_'+nb+'" name="'+originalName+'['+nb+']" class="original" value="'+originalFilename+'">' +
         '<img src="/'+options.uploadConfig.webDir + '/' + thumb+'?'+ new Date().getTime()+'"/>' +
     '</div>');
-    rebindGalleryRemove();
+    rebindGalleryRemove(options);
 }
 
-function removeImageFromGallery(filename, id)
+function removeImageFromGallery(filename, id, parentId, options)
 {
     
     // ADD DELETE FILE HERE !
     $('#'+id).parent().remove();
-    reorderItems(id);
+    reorderItems(parentId, options);
 
 }
 
-function reorderItems(id)
+function reorderItems(id, options)
 {
     var name = $('#'+id).data('name');
+    var origName;
+    if(options['originalImageFieldName']) {
+        origName = options['originalImageFieldName'];
+    } else {
+        origName = '';
+    }
+    var orig = getOriginalName(name, origName);
     $( '#'+id+' .gallery-image-container' ).each(function(i, item){
-        $(item).find('input').attr('name', name+'['+i+']');
+        $(item).find('input:not(.original)').attr('name', name+'['+i+']');
+        $(item).find('input.original').attr('name', orig+'['+i+']');
     });
 }
 
-function rebindGalleryRemove()
+function rebindGalleryRemove(options)
 {
     $('.gallery-image-container span').unbind('click');
     $('.gallery-image-container span').click(function(){
-        removeImageFromGallery($(this).parent().data('image'), $(this).parent().find('input').attr('id'));
+        removeImageFromGallery($(this).parent().data('image'), $(this).parent().find('input').attr('id'),
+            $(this).closest('.gallery-well').attr('id'), options);
         return false; 
     });
 }

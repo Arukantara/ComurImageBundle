@@ -40,23 +40,23 @@ class CroppableGalleryType extends CroppableImageType
         //     $form->getParent()->add($options['uploadConfig']['saveOriginal'], 'hidden');
         // }
         // var_dump($builder->getDataMapper());exit;
-        // if($options['uploadConfig']['saveOriginal']){
-        //     $builder->add($options['uploadConfig']['saveOriginal'], 'text', array(
-        //         // 'inherit_data' => true,
-        //         // 'property_path' => $options['uploadConfig']['saveOriginal'],
-        //         'attr' => array('style' => 'opacity: 0;width: 0; max-width: 0; height: 0; max-height: 0;')));
-        // }
+        if($options['uploadConfig']['saveOriginal']){
+            $builder->add($options['uploadConfig']['saveOriginal'], 'collection', array(
+                // 'inherit_data' => true,
+                // 'property_path' => $options['uploadConfig']['saveOriginal'],
+                'entry_type' => 'hidden',
+                'allow_add' => function(Options $options, $value){ return true; },
+                'allow_delete' => function(Options $options, $value){ return true; }
+            ));
+        }
 
         $builder->add($builder->getName(), 'collection', array(
             // 'property_path' => $builder->getName(),
             // 'inherit_data' => true,
+            'entry_type' => 'hidden',
             'allow_add' => function(Options $options, $value){ return true; },
-            'allow_delete' => function(Options $options, $value){ return true; },
-            'options' => array(
-                'attr' => array('style' => 'opacity: 0;width: 0; max-width: 0; height: 0; max-height: 0;padding: 0; position: absolute;'
-                    )
-                )
-            ));
+            'allow_delete' => function(Options $options, $value){ return true; }
+        ));
     }
 
     public function __construct($galleryDir, $thumbsDir, $galleryThumbSize)
@@ -81,42 +81,43 @@ class CroppableGalleryType extends CroppableImageType
             
             
         // ));
-    //     $uploadConfig = array(
-    //         'uploadRoute' => 'comur_api_upload',
-    //         'uploadUrl' => null,
-    //         'webDir' => null,
-    //         'fileExt' => '*.jpg;*.gif;*.png;*.jpeg',
-    //         'libraryDir' => null,
-    //         'libraryRoute' => 'comur_api_image_library',
-    //         'showLibrary' => true
-    //     );
+         $uploadConfig = array(
+             'uploadRoute' => 'comur_api_upload',
+             'uploadUrl' => $galleryDir,
+             'webDir' => null,
+             'fileExt' => '*.jpg;*.gif;*.png;*.jpeg',
+             'libraryDir' => null,
+             'libraryRoute' => 'comur_api_image_library',
+             'showLibrary' => true,
+             'saveOriginal' => 'originalGallery'
+         );
 
-    //     $cropConfig = array(
-    //         'minWidth' => 1,
-    //         'minHeight' => 1,
-    //         'aspectRatio' => true,
-    //         'cropRoute' => 'comur_api_crop',
-    //         'forceResize' => false,
-    //         'thumbs' => null
-    //     );
+         $cropConfig = array(
+             'minWidth' => 1,
+             'minHeight' => 1,
+             'aspectRatio' => true,
+             'cropRoute' => 'comur_api_crop',
+             'forceResize' => false,
+             'thumbs' => null
+         );
 
-    //     $resolver->setDefaults(array(
-    //         'uploadConfig' => $uploadConfig,
-    //         'cropConfig' => $cropConfig,
-    //     ));
+         $resolver->setDefaults(array(
+             'uploadConfig' => $uploadConfig,
+             'cropConfig' => $cropConfig,
+         ));
         
-    //     $resolver->setNormalizers(array(
-    //         'uploadConfig' => function(Options $options, $value) use ($uploadConfig){
-    //             $config = array_merge($uploadConfig, $value);
-    //             if(!isset($config['libraryDir'])){
-    //                 $config['libraryDir'] = $config['uploadUrl'];
-    //             }
-    //             return $config;
-    //         },
-    //         'cropConfig' => function(Options $options, $value) use($cropConfig){
-    //             return array_merge($cropConfig, $value);
-    //         }
-    //     ));
+         $resolver->setNormalizers(array(
+             'uploadConfig' => function(Options $options, $value) use ($uploadConfig){
+                 $config = array_merge($uploadConfig, $value);
+                 if(!isset($config['libraryDir'])){
+                     $config['libraryDir'] = $config['uploadUrl'];
+                 }
+                 return $config;
+             },
+             'cropConfig' => function(Options $options, $value) use($cropConfig){
+                 return array_merge($cropConfig, $value);
+             }
+         ));
         
     }
 
@@ -132,7 +133,6 @@ class CroppableGalleryType extends CroppableImageType
         // var_dump($options);exit;
 
         $uploadConfig['isGallery'] = true;
-
         $view->vars['options'] = array('uploadConfig' => $uploadConfig, 'cropConfig' => $cropConfig, 'galleryThumbSize' => $this->galleryThumbSize);
         // $view->vars['options']['attr'] = array('style' => 'opacity: 0;width: 0; max-width: 0; height: 0; max-height: 0;', 'multiple' => true);
         // $view->vars['attr'] = array('style' => 'opacity: 0;width: 0; max-width: 0; height: 0; max-height: 0;', 'multiple' => true);

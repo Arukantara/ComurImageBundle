@@ -41,15 +41,16 @@ class CroppableImageType extends AbstractType
         // }
         // var_dump($builder->getDataMapper());exit;
         if($options['uploadConfig']['saveOriginal']){
-            $builder->add($options['uploadConfig']['saveOriginal'], 'text', array(
+            $builder->add($options['uploadConfig']['saveOriginal'], 'hidden', array(
                 // 'inherit_data' => true,
                 // 'property_path' => $options['uploadConfig']['saveOriginal'],
-                'attr' => array('style' => 'opacity: 0;width: 0; max-width: 0; height: 0; max-height: 0;')));
+                    'attr' => array('class' => 'original')
+                ));
         }
-        $builder->add($builder->getName(), 'text', array(
+        $builder->add($builder->getName(), 'hidden', array(
             // 'property_path' => $builder->getName(),
             // 'inherit_data' => true,
-            'attr' => array('style' => 'opacity: 0;width: 0; max-width: 0; height: 0; max-height: 0;')));
+            ));
     }
 
     /**
